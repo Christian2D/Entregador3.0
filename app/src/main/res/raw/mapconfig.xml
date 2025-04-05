@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<map-config>
+    <bounds>
+        <min-lat>-24.04</min-lat>
+        <min-lon>-46.514</min-lon>
+        <max-lat>-23.842</max-lat>
+        <max-lon>-46.181</max-lon>
+    </bounds>
+    <rendering-styles>
+        <style>default</style>
+    </rendering-styles>
+</map-config>

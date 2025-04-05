@@ -1,0 +1,17 @@
+<resources>
+
+    <style name="Theme.Entregador" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Cores principais do seu app -->
+        <item name="colorPrimary">@color/greenPrimary</item>
+        <item name="colorPrimaryVariant">@color/greenSecondary</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+
+        <item name="colorSecondary">@color/greenSecondary</item>
+        <item name="colorSecondaryVariant">@color/greenPrimary</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+
+        <item name="android:statusBarColor" >@color/greenSecondary</item>
+        <item name="android:windowBackground">@color/greenBackground</item>
+    </style>
+
+</resources>

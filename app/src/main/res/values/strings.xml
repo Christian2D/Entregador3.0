@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">Entregador</string>
+
+    <!-- Mensagens de erro -->
+    <string name="error_invalid_values">Digite valores válidos</string>
+    <string name="error_whatsapp_not_found">WhatsApp não instalado</string>
+    <string name="error_generic">Erro ao processar solicitação</string>
+    <string name="error_offline_map">Erro ao carregar mapa offline</string>
+    <string name="error_route_not_found">Rota não encontrada</string>
+    <string name="error_invalid_address">Digite um endereço válido</string>
+    <string name="error_address_not_found">Endereço não encontrado</string>
+    <string name="error_snap_failed">Não foi possível ajustar ao mapa</string>
+    <string name="error_whatsapp">Erro ao abrir o WhatsApp</string>
+
+    <!-- Templates para exibição -->
+    <string name="template_value">Valor: R$ %1$.2f</string>
+    <string name="template_distance">Distância: %1$.2f km</string>
+    <string name="template_time">Tempo estimado: %1$.0f minutos</string>
+
+    <!-- Mensagens de validação -->
+    <string name="validation_origin_required">Defina a origem primeiro</string>
+    <string name="validation_destination_required">Defina o destino primeiro</string>
+
+    <!-- Textos gerais -->
+    <string name="title_delivery_details">Detalhes da Entrega</string>
+    <string name="label_origin">Origem:</string>
+    <string name="label_destination">Destino:</string>
+    <string name="label_km">Quilometragem</string>
+    <string name="label_calculate">Calcular</string>
+    <string name="label_send_whatsapp">Enviar via WhatsApp</string>
+
+    <string name="menu_manual_mode">Modo Manual</string>
+    <string name="menu_about">Sobre</string>
+</resources>

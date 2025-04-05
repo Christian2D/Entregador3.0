@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="tvDistance" type="id" />
+    <item name="tvTime" type="id" />
+    <item name="tvValue" type="id" />
+</resources>
