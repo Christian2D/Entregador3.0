@@ -8,8 +8,9 @@
     android:orientation="vertical"
     android:padding="16dp"
     android:background="@color/greenBackground"
-    tools:context=".activities.ManualCalcActivity1">
+    tools:context=".activities.ManualCalcActivity">
 
+    <!-- Campo de Quilometragem -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,10 +21,11 @@
             android:id="@+id/etKm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Quilometragem"
+            android:hint="@string/quilometragem"
             android:inputType="numberDecimal"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Campo de Origem -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -34,9 +36,10 @@
             android:id="@+id/etManualOrigin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Origem (opcional)"/>
+            android:hint="@string/origem_opcional"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Campo de Destino -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -47,17 +50,20 @@
             android:id="@+id/etManualDest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Destino (opcional)"/>
+            android:hint="@string/destino_opcional"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Botão de Cálculo -->
     <Button
         android:id="@+id/btnCalculateManual"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Calcular"
+        android:text="@string/calcular"
         android:backgroundTint="@color/greenPrimary"
-        android:textColor="@android:color/white"/>
+        android:textColor="@android:color/white"
+        android:contentDescription="@string/calcular"/>
 
+    <!-- Resultado -->
     <TextView
         android:id="@+id/tvResult"
         android:layout_width="match_parent"
@@ -65,15 +71,18 @@
         android:layout_marginTop="16dp"
         android:textSize="16sp"
         android:textColor="@color/greenSecondary"
-        android:textAlignment="center"/>
+        android:gravity="center"
+        android:contentDescription="@string/title_delivery_details"/>
 
+    <!-- Botão WhatsApp -->
     <Button
         android:id="@+id/btnWhatsAppManual"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Enviar via WhatsApp"
+        android:text="@string/enviar_whatsapp"
         android:layout_marginTop="16dp"
         android:backgroundTint="@color/greenSecondary"
-        android:textColor="@android:color/white"/>
+        android:textColor="@android:color/white"
+        android:contentDescription="@string/enviar_whatsapp"/>
 
 </LinearLayout>

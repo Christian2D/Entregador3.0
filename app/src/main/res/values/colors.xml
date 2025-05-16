@@ -2,6 +2,10 @@
 <resources>
     <color name="greenPrimary">#4CAF50</color>
     <color name="greenSecondary">#388E3C</color>
+    <color name="greenDark">#006400</color>
     <color name="greenBackground">#E8F5E9</color>
+    <color name="blueLight">#4285F4</color>
+    <color name="red">#D32F2F</color> <!-- Vermelho escuro do Material Design -->
     <color name="black">#FF000000</color>
+    <color name="white">#FFFFFF</color>
 </resources>

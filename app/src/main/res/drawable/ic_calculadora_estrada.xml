@@ -1,0 +1,43 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Fundo transparente -->
+
+    <!-- Estrada diagonal (cinza escuro) -->
+    <path
+        android:fillColor="#666666"
+        android:pathData="M-10,106 L106,-10 L116,0 L0,116 Z" />
+
+    <!-- Faixas amarelas no centro da estrada -->
+    <path
+        android:fillColor="#FFCC00"
+        android:pathData="M15,81 L18,78 L78,18 L81,21 Z" />
+    <path
+        android:fillColor="#FFCC00"
+        android:pathData="M35,61 L38,58 L58,38 L61,41 Z" />
+
+    <!-- Calculadora (azul escuro com botões coloridos) -->
+    <path
+        android:fillColor="#0066CC"
+        android:pathData="M30,30 h36 v36 h-36 z" />
+
+    <!-- Tela da calculadora -->
+    <path
+        android:fillColor="#B3E5FC"
+        android:pathData="M34,34 h28 v10 h-28 z" />
+
+    <!-- Botões da calculadora -->
+    <path android:fillColor="#E53935" android:pathData="M34,48 h6 v6 h-6 z" />
+    <path android:fillColor="#43A047" android:pathData="M42,48 h6 v6 h-6 z" />
+    <path android:fillColor="#FFB300" android:pathData="M50,48 h6 v6 h-6 z" />
+    <path android:fillColor="#8E24AA" android:pathData="M58,48 h6 v6 h-6 z" />
+
+    <path android:fillColor="#29B6F6" android:pathData="M34,56 h6 v6 h-6 z" />
+    <path android:fillColor="#FDD835" android:pathData="M42,56 h6 v6 h-6 z" />
+    <path android:fillColor="#66BB6A" android:pathData="M50,56 h6 v6 h-6 z" />
+    <path android:fillColor="#EC407A" android:pathData="M58,56 h6 v6 h-6 z" />
+
+</vector>

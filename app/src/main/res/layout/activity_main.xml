@@ -1,104 +1,189 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
     tools:context=".activities.MainActivity">
 
-    <!-- Mapa -->
-    <org.osmdroid.views.MapView
-        android:id="@+id/mapView"
+    <!-- Toolbar no topo -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:titleTextColor="@android:color/white"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    <!-- Campo de Origem -->
-    <LinearLayout
+    <!-- Conteúdo com Mapa + Botão flutuante -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="250dp"
+        android:layout_margin="16dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etOrigin"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Origem"/>
+        <org.osmdroid.views.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/map_description" />
 
-        <Button
-            android:id="@+id/btnSearchOrigin"
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnRecenter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Buscar"/>
-    </LinearLayout>
+            android:layout_gravity="end|bottom"
+            android:layout_margin="12dp"
+            android:src="@android:drawable/ic_menu_mylocation"
+            android:contentDescription="@string/recentrar_mapa"
+            app:backgroundTint="@color/greenPrimary" />
+    </FrameLayout>
 
-    <!-- Campo de Destino -->
-    <LinearLayout
+    <!-- Scroll de conteúdo -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etDestination"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Destino"/>
-
-        <Button
-            android:id="@+id/btnSearchDestination"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Buscar"/>
-    </LinearLayout>
-
-    <!-- Botão de Cálculo -->
-    <Button
-        android:id="@+id/btnCalculate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Calcular Rota"
-        android:layout_marginTop="16dp"/>
-
-    <!-- Resultados -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="16dp">
-
-        <TextView
-            android:id="@+id/tvDistance"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16sp"/>
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
 
-        <TextView
-            android:id="@+id/tvTime"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:layout_marginTop="8dp"/>
+            <!-- Campo de Origem -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/pin_origem"
+                app:startIconDrawable="@android:drawable/ic_menu_mylocation">
 
-        <TextView
-            android:id="@+id/tvValue"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:layout_marginTop="8dp"/>
-    </LinearLayout>
+                <AutoCompleteTextView
+                    android:id="@+id/etOrigin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:hint="@string/pin_origem" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Botão WhatsApp -->
-    <Button
-        android:id="@+id/btnWhatsApp"
-        android:layout_width="match_parent"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSearchOrigin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/buscar"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_gravity="end"
+                android:layout_marginBottom="12dp"
+                android:contentDescription="@string/buscar" />
+
+            <!-- Campo de Destino -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/pin_destino"
+                app:startIconDrawable="@android:drawable/ic_menu_directions">
+
+                <AutoCompleteTextView
+                    android:id="@+id/etDestination"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:hint="@string/pin_destino" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSearchDestination"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/buscar"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_gravity="end"
+                android:layout_marginBottom="16dp"
+                android:contentDescription="@string/buscar" />
+
+            <!-- Botão Calcular -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCalculate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/calcular"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_marginTop="8dp"
+                android:contentDescription="@string/calcular" />
+
+            <!-- Resultados -->
+            <TextView
+                android:id="@+id/tvDistance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginTop="16dp"
+                android:textColor="@color/black"
+                android:text="@string/template_distance"
+                android:contentDescription="@string/template_distance" />
+
+            <TextView
+                android:id="@+id/tvTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/black"
+                android:text="@string/template_time"
+                android:contentDescription="@string/template_time" />
+
+            <TextView
+                android:id="@+id/tvTotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/black"
+                android:text="@string/template_value"
+                android:contentDescription="@string/template_value" />
+
+            <!-- Botão Cheguei -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnChegueiOrigem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cheguei_na_origem"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_marginTop="16dp"
+                android:contentDescription="@string/cheguei_na_origem" />
+
+            <!-- Botão Google Maps -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAbrirGoogleMaps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/abrir_google_maps"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_marginTop="8dp"
+                android:contentDescription="@string/abrir_google_maps" />
+
+            <!-- Botão WhatsApp -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnWhatsApp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enviar_whatsapp"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_marginTop="24dp"
+                android:contentDescription="@string/enviar_whatsapp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ProgressBar centralizado -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enviar via WhatsApp"
-        android:layout_marginTop="16dp"/>
-
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:contentDescription="@string/loading_circle" />
 </LinearLayout>

@@ -4,82 +4,70 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.text.TextUtils
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.entregador.R
-import java.util.Locale
-import androidx.core.net.toUri  // Adicione este import
 import kotlin.math.max
 
 class ManualCalcActivity : AppCompatActivity() {
-    private var etKm: EditText? = null
-    private var etManualOrigin: EditText? = null
-    private var etManualDest: EditText? = null
-    private var tvResult: TextView? = null
+
+    private lateinit var etKm: EditText
+    private lateinit var etManualOrigin: EditText
+    private lateinit var etManualDest: EditText
+    private lateinit var tvResult: TextView
     private var calculatedValue = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_manual_calc)
 
-        initializeViews()
+        bindViews()
         setupClickListeners()
     }
 
-    private fun initializeViews() {
+    private fun bindViews() {
         etKm = findViewById(R.id.etKm)
         etManualOrigin = findViewById(R.id.etManualOrigin)
         etManualDest = findViewById(R.id.etManualDest)
         tvResult = findViewById(R.id.tvResult)
-
-        // Remova as declarações não utilizadas ou utilize-as
-        findViewById<Button>(R.id.btnCalculateManual).setOnClickListener {
-            calculateManual()
-        }
-
-        findViewById<Button>(R.id.btnWhatsAppManual).setOnClickListener {
-            sendManualWhatsApp()
-        }
     }
 
     private fun setupClickListeners() {
-        findViewById<View?>(R.id.btnCalculateManual).setOnClickListener(View.OnClickListener { v: View? -> calculateManual() })
-        findViewById<View?>(R.id.btnWhatsAppManual).setOnClickListener(View.OnClickListener { v: View? -> sendManualWhatsApp() })
+        findViewById<Button>(R.id.btnCalculateManual).setOnClickListener { calculateManual() }
+        findViewById<Button>(R.id.btnWhatsAppManual).setOnClickListener { sendManualWhatsApp() }
     }
 
     private fun calculateManual() {
-        try {
-            val km = etKm!!.text.toString().toDouble()
-            val calculator = DeliveryCalculator()
-            val result = calculator.calculateManualDelivery(km)
-
-            updateResults(result)
-            calculatedValue = result.total
-        } catch (_: NumberFormatException) {  // Usamos _ para indicar parâmetro não usado
+        val km = etKm.text.toString().toDoubleOrNull()
+        if (km == null || km < 0) {
             showToast(R.string.error_invalid_values)
+            return
         }
+
+        val calculator = DeliveryCalculator()
+        val result = calculator.calculateManualDelivery(km)
+
+        updateResults(result)
+        calculatedValue = result.total
     }
 
     private fun updateResults(result: CalculationResult) {
-        val formattedResult = String.format(
-            Locale.getDefault(),
-            "Ida: R$ %.2f\nRetorno: R$ %.2f\nTotal: R$ %.2f",
+        // Usando strings.xml com placeholders para internacionalização e clareza
+        val formattedResult = getString(
+            R.string.manual_calc_result,
             result.oneWay,
             result.returnTrip,
             result.total
         )
-
-        tvResult?.text = formattedResult  // Usando property access syntax
+        tvResult.text = formattedResult
     }
 
     private fun sendManualWhatsApp() {
+        val message = createWhatsAppMessage()
         try {
-            val message = createWhatsAppMessage()
             openWhatsApp(message)
         } catch (_: ActivityNotFoundException) {
             showToast(R.string.error_whatsapp_not_found)
@@ -89,53 +77,53 @@ class ManualCalcActivity : AppCompatActivity() {
     }
 
     private fun createWhatsAppMessage(): String {
-        val message = StringBuilder("*Cálculo Manual*\n\n")
+        val origem = etManualOrigin.text.toString().trim()
+        val destino = etManualDest.text.toString().trim()
+        val km = etKm.text.toString().trim()
+        val resultado = tvResult.text.toString().trim()
 
-        appendIfNotEmpty(message, "Origem: ", etManualOrigin?.text?.toString() ?: "")
-        appendIfNotEmpty(message, "Destino: ", etManualDest?.text?.toString() ?: "")
+        return """
+            Detalhes da Entrega Manual
 
-        message.append("Distância: ").append(etKm?.text ?: "").append(" km\n")
-        message.append("Resultado:\n").append(tvResult?.text ?: "")
+            Origem: $origem
+            Destino: $destino
+            Distância: $km km
 
-        return message.toString()
+            Valores:
+            $resultado
+        """.trimIndent()
     }
 
-    private fun appendIfNotEmpty(sb: StringBuilder, prefix: String?, value: String?) {
-        if (!TextUtils.isEmpty(value)) {
-            sb.append(prefix).append(value).append("\n")
+    private fun openWhatsApp(message: String) {
+        val uri = Uri.parse("https://api.whatsapp.com/send?phone=5513991337370&text=${Uri.encode(message)}")
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            throw ActivityNotFoundException("WhatsApp não instalado")
         }
-    }
-
-    @Throws(ActivityNotFoundException::class)
-    private fun openWhatsApp(message: String?) {
-        Intent(Intent.ACTION_VIEW).apply {
-            data = "https://api.whatsapp.com/send?phone=5513991337370&text=${Uri.encode(message)}".toUri()
-        }.takeIf { it.resolveActivity(packageManager) != null }?.let {
-            startActivity(it)
-        } ?: throw ActivityNotFoundException()
     }
 
     private fun showToast(messageResId: Int) {
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
     }
 
-    // Classe de cálculo separada para melhor organização
+    // Classe de cálculo com constantes organizadas e documentação
     private class DeliveryCalculator {
-        fun calculateManualDelivery(km: Double): CalculationResult {
-            val oneWay = max(MINIMUM_VALUE, BASE_RATE + (km * RATE_PER_KM))
-            val returnTrip = oneWay
-            val total = oneWay + returnTrip
-
-            return CalculationResult(oneWay, returnTrip, total)
-        }
-
         companion object {
             private const val BASE_RATE = 2.0
             private const val RATE_PER_KM = 2.0
             private const val MINIMUM_VALUE = 7.0
         }
+
+        fun calculateManualDelivery(km: Double): CalculationResult {
+            val oneWay = max(MINIMUM_VALUE, BASE_RATE + (km * RATE_PER_KM))
+            val returnTrip = oneWay
+            val total = oneWay + returnTrip
+            return CalculationResult(oneWay, returnTrip, total)
+        }
     }
 
-    // Classe para encapsular os resultados
-    private class CalculationResult(val oneWay: Double, val returnTrip: Double, val total: Double)
+    // Data class para resultados de cálculo
+    private data class CalculationResult(val oneWay: Double, val returnTrip: Double, val total: Double)
 }

@@ -1,34 +1,77 @@
 <resources>
+
+    <!-- ===================== APP / GERAL ===================== -->
     <string name="app_name">Entregador</string>
 
-    <!-- Mensagens de erro -->
+    <!-- ===================== ERROS ===================== -->
+    <!-- Mensagens de erro genéricas e específicas -->
     <string name="error_invalid_values">Digite valores válidos</string>
-    <string name="error_whatsapp_not_found">WhatsApp não instalado</string>
     <string name="error_generic">Erro ao processar solicitação</string>
     <string name="error_offline_map">Erro ao carregar mapa offline</string>
     <string name="error_route_not_found">Rota não encontrada</string>
     <string name="error_invalid_address">Digite um endereço válido</string>
-    <string name="error_address_not_found">Endereço não encontrado</string>
+    <string name="error_address_not_found">Endereço não encontrado no mapa. Verifique e tente novamente.</string>
     <string name="error_snap_failed">Não foi possível ajustar ao mapa</string>
     <string name="error_whatsapp">Erro ao abrir o WhatsApp</string>
+    <string name="error_route_not_ready">Erro: dados de rota não carregados</string>
+    <string name="error_gps_disabled">Localização desativada. Ative o GPS para continuar.</string>
+    <string name="error_whatsapp_not_found">WhatsApp não instalado</string>
 
-    <!-- Templates para exibição -->
+    <!-- ===================== VALIDAÇÕES / ALERTAS ===================== -->
+    <string name="validation_origin_required">Defina a origem primeiro</string>
+    <string name="validation_destination_required">Defina o destino primeiro</string>
+
+    <!-- ===================== MAPA / VISUALIZAÇÃO ===================== -->
+    <string name="map_description">Mapa de visualização</string>
+    <string name="recentrar_mapa">Recentrar mapa</string>
+
+    <!-- ===================== CAMPOS / LABELS ===================== -->
+    <!-- Usados como títulos, placeholders e hints -->
+    <string name="label_origem">Origem</string>
+    <string name="label_destino">Destino</string>
+    <string name="origem">Origem</string>
+    <string name="destino">Destino</string>
+    <string name="pin_origem">Origem</string>
+    <string name="pin_destino">Destino</string>
+    <string name="origem_opcional">Origem (opcional)</string>
+    <string name="destino_opcional">Destino (opcional)</string>
+    <string name="quilometragem">Quilometragem</string>
+    <string name="title_delivery_details">Detalhes da Entrega</string>
+
+    <!-- ===================== EXIBIÇÃO FORMATADA ===================== -->
+    <string name="distancia_formatada">Distância: %.2f km</string>
+    <string name="tempo_estimado_formatado">Tempo estimado: %d min</string>
+    <string name="valor_total_formatado">Valor total: R$ %.2f</string>
+    <string name="manual_calc_result">Ida: R$ %.2f\nRetorno: R$ %.2f\nTotal: R$ %.2f</string>
+    <!-- Templates reutilizáveis -->
     <string name="template_value">Valor: R$ %1$.2f</string>
     <string name="template_distance">Distância: %1$.2f km</string>
     <string name="template_time">Tempo estimado: %1$.0f minutos</string>
 
-    <!-- Mensagens de validação -->
-    <string name="validation_origin_required">Defina a origem primeiro</string>
-    <string name="validation_destination_required">Defina o destino primeiro</string>
+    <!-- ===================== BOTÕES ===================== -->
+    <string name="button_calcular">Calcular</string>
+    <string name="button_enviar_whatsapp">Enviar via WhatsApp</string>
+    <string name="button_buscar">Buscar</string>
+    <string name="buscar">Buscar</string>
+    <string name="calcular">Calcular</string>
+    <string name="cheguei_na_origem">Cheguei na origem</string>
+    <string name="ir_para_destino">Ir para o destino</string>
+    <string name="voltar_para_origem">Voltar para a origem</string>
+    <string name="abrir_google_maps">Abrir no Google Maps</string>
+    <string name="enviar_whatsapp">Enviar via WhatsApp</string>
 
-    <!-- Textos gerais -->
-    <string name="title_delivery_details">Detalhes da Entrega</string>
-    <string name="label_origin">Origem:</string>
-    <string name="label_destination">Destino:</string>
-    <string name="label_km">Quilometragem</string>
-    <string name="label_calculate">Calcular</string>
-    <string name="label_send_whatsapp">Enviar via WhatsApp</string>
-
+    <!-- ===================== MENU ===================== -->
     <string name="menu_manual_mode">Modo Manual</string>
     <string name="menu_about">Sobre</string>
+
+    <!-- ===================== TELA DE CARREGAMENTO ===================== -->
+    <string name="loading_dots">Carregando%s</string>
+    <string name="loading_initial">Carregando.</string>
+    <string name="loading_graph">Carregando dados de rota…</string>
+    <string name="loading_circle">Indicador de progresso de carregamento</string>
+    <string name="loading_percent">Porcentagem de progresso</string>
+    <string name="loading_text">Status de carregamento</string>
+    <string name="percent_zero">0%</string>
+    <string name="loading_first_time_notice">A primeira vez pode demorar um pouco para configurar. Depois será rápido!</string>
+
 </resources>

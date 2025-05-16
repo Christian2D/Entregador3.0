@@ -1,243 +1,267 @@
 package com.example.entregador.activities
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.location.Location
+import android.net.Uri
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
-import android.util.Log // IMPORTANTE: no topo do arquivo
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.annotation.StringRes
-import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import com.example.entregador.R
 import com.example.entregador.databinding.ActivityMainBinding
+import com.example.entregador.services.GraphHopperManager
 import com.example.entregador.services.OfflineGeocoder
-import com.example.entregador.services.RouteCalculator
+import com.example.entregador.utils.EnderecoFinder
 import com.example.entregador.utils.MapUtils
-import com.example.entregador.utils.MapsforgeTileSource
-import org.osmdroid.config.Configuration
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.overlay.Marker
-import java.io.File
+import com.example.entregador.utils.PermissionUtils
+import com.example.entregador.utils.TileSourceFactory
+import com.google.android.gms.location.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.osmdroid.config.Configuration
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import androidx.core.net.toUri
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivityMainBinding
-    private lateinit var geocoder: OfflineGeocoder
-    private lateinit var routeCalculator: RouteCalculator
-    private var startPoint: GeoPoint? = null
-    private var endPoint: GeoPoint? = null
+    private lateinit var enderecoFinder: EnderecoFinder
+    private lateinit var offlineGeocoder: OfflineGeocoder
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var mapView: MapView
+    private lateinit var graphHopperManager: GraphHopperManager
+    private var localizacaoAtual: Location? = null
+    private var indoParaDestino = true
 
-    // Marcadores para origem e destino
-    private var originMarker: Marker? = null
-    private var destinationMarker: Marker? = null
+    // Referência aos marcadores para poder remover depois
+    private var markerOrigem: Marker? = null
+    private var markerDestino: Marker? = null
+
+    // Constantes
+    companion object {
+        private const val TAXA_DESLOCAMENTO_KM = 0.30
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // CORROTINA PARA CARREGAR MAPA SEM TRAVAR
-        lifecycleScope.launch(Dispatchers.IO) {
-            initializeServicesSafely()
-            //val ways = MapUtils.loadOSMDataBlocking(this@MainActivity)
-            //withContext(Dispatchers.Main) {
-                //MapUtils.drawRoute(binding.mapView, ways.flatten(), ContextCompat.getColor(this@MainActivity, R.color.black), 2f)
-            //}
+        // Inicializações
+        Configuration.getInstance().load(applicationContext, getSharedPreferences("prefs", MODE_PRIVATE))
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        enderecoFinder = EnderecoFinder(this)
+        offlineGeocoder = OfflineGeocoder(this)
+        graphHopperManager = GraphHopperManager(this)
+        mapView = binding.mapView
+        setSupportActionBar(binding.toolbar)
+
+        // Permissão de localização
+        if (!PermissionUtils.temPermissaoLocalizacao(this)) {
+            PermissionUtils.solicitarPermissaoLocalizacao(this)
         }
 
-        configureOSMMap()
-        initializeServices()
+        configurarMapa()
         setupUIListeners()
     }
 
-    private suspend fun initializeServicesSafely() {
-        withContext(Dispatchers.IO) {
-            geocoder = OfflineGeocoder(this@MainActivity)
-            routeCalculator = RouteCalculator(this@MainActivity)
-            routeCalculator.initializeGraph()
-        }
-    }
-
-    private fun configureOSMMap() {
-        Configuration.getInstance().apply {
-            userAgentValue = packageName
-            osmdroidBasePath = File(getExternalFilesDir(null), "osmdroid")
-        }
-
-        loadOfflineMap()
-
-        binding.mapView.apply {
-            setTileSource(TileSourceFactory.MAPNIK)
-            controller.setZoom(15.0)
-            controller.setCenter(GeoPoint(-23.9608, -46.3336))
-            setMultiTouchControls(true)
-        }
-    }
-
-    private fun loadOfflineMap() {
-        try {
-            val mbtilesFile = File(getExternalFilesDir(null), "santos.osm")
-            if (mbtilesFile.exists()) {
-                binding.mapView.setTileSource(MapsforgeTileSource.createFromMBTiles(mbtilesFile))
-            }
-        } catch (_: Exception) {
-            showToast(R.string.error_offline_map)
-        }
-    }
-
-    private fun initializeServices() {
-        geocoder = OfflineGeocoder(this)
-        routeCalculator = RouteCalculator(this)
+    // Configuração inicial do mapa
+    private fun configurarMapa() {
+        TileSourceFactory.configurarTileSource(this, mapView)
+        mapView.setMultiTouchControls(true)
+        mapView.controller.setZoom(15.0)
     }
 
     private fun setupUIListeners() {
-        binding.btnSearchOrigin.setOnClickListener { handleAddressSearch(true) }
-        binding.btnSearchDestination.setOnClickListener { handleAddressSearch(false) }
-        binding.btnCalculate.setOnClickListener { handleRouteCalculation() }
-        binding.btnWhatsApp.setOnClickListener { shareRouteViaWhatsApp() }
-    }
-
-    private fun handleAddressSearch(isOrigin: Boolean) {
-        val query = if (isOrigin) binding.etOrigin.text.toString()
-        else binding.etDestination.text.toString()
-
-        if (query.isBlank()) {
-            showToast(R.string.error_invalid_address)
-            return
+        // Buscar origem
+        binding.btnSearchOrigin.setOnClickListener {
+            val endereco = binding.etOrigin.text.toString()
+            val ponto = offlineGeocoder.buscarCoordenada(endereco)
+            if (ponto != null) {
+                removerMarcador("origem")
+                markerOrigem = adicionarPino(mapView, ponto, "Origem", R.drawable.ic_pin_origem)
+            } else {
+                Toast.makeText(this, R.string.error_address_not_found, Toast.LENGTH_SHORT).show()
+            }
         }
 
-        val results = geocoder.searchAddress(query)
-        if (results.isEmpty()) {
-            showToast(R.string.error_address_not_found)
-            return
+        // Buscar destino
+        binding.btnSearchDestination.setOnClickListener {
+            val endereco = binding.etDestination.text.toString()
+            val ponto = offlineGeocoder.buscarCoordenada(endereco)
+            if (ponto != null) {
+                removerMarcador("destino")
+                markerDestino = adicionarPino(mapView, ponto, "Destino", R.drawable.ic_pin_destino)
+            } else {
+                Toast.makeText(this, R.string.error_address_not_found, Toast.LENGTH_SHORT).show()
+            }
         }
 
-        val snappedPoint = geocoder.snapToRoad(results.first()) ?: run {
-            showToast(R.string.error_snap_failed)
-            return
+        // Calcular rota
+        binding.btnCalculate.setOnClickListener {
+            if (!graphHopperManager.isGraphLoaded()) {
+                Toast.makeText(this, R.string.error_route_not_ready, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            handleRouteCalculation()
         }
 
-        val title = if (isOrigin) R.string.label_origin else R.string.label_destination
-        addMapMarker(
-            snappedPoint,
-            getString(title),
-            if (isOrigin) R.drawable.ic_pin_start else R.drawable.ic_pin_end,
-            isOrigin
-        )
+        // Botão "Cheguei na origem"
+        binding.btnChegueiOrigem.setOnClickListener {
+            if (markerOrigem == null || markerDestino == null) {
+                Toast.makeText(applicationContext, "Defina origem e destino antes.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-        if (isOrigin) startPoint = snappedPoint else endPoint = snappedPoint
-        binding.mapView.controller.animateTo(snappedPoint)
-    }
+            val origem = markerOrigem!!.position
+            val destino = markerDestino!!.position
 
-    private fun addMapMarker(point: GeoPoint, title: String, iconRes: Int, isOrigin: Boolean) {
-        // Remove apenas o marcador correspondente (origem ou destino)
-        if (isOrigin) {
-            originMarker?.let { binding.mapView.overlays.remove(it) }
-        } else {
-            destinationMarker?.let { binding.mapView.overlays.remove(it) }
+            val (rota, tipo) = if (indoParaDestino) {
+                graphHopperManager.calculateRoute(origem, destino) to getString(R.string.destino)
+            } else {
+                graphHopperManager.calculateRoute(destino, origem) to getString(R.string.origem)
+            }
+
+            MapUtils.drawRoute(mapView, rota.points, Color.BLUE, 5f, "rota_volta")
+            mapView.controller.animateTo(rota.points.firstOrNull())
+
+            indoParaDestino = !indoParaDestino
+            binding.btnChegueiOrigem.text =
+                if (indoParaDestino) getString(R.string.abrir_google_maps) else getString(R.string.cheguei_na_origem)
+
+            Toast.makeText(applicationContext, "Rota para $tipo traçada!", Toast.LENGTH_SHORT).show()
         }
 
-        // Cria e configura o novo marcador
-        val marker = Marker(binding.mapView).apply {
-            position = point
-            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            this.title = title
-            icon = ContextCompat.getDrawable(this@MainActivity, iconRes)
+        // Botão abrir no Google Maps
+        binding.btnAbrirGoogleMaps.setOnClickListener {
+            val destino = binding.etDestination.text.toString()
+            val ponto = offlineGeocoder.buscarCoordenada(destino)
+            if (ponto != null) {
+                val uri =
+                    "geo:${ponto.latitude},${ponto.longitude}?q=${ponto.latitude},${ponto.longitude}(Destino)".toUri()
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                intent.setPackage("com.google.android.apps.maps")
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, R.string.error_address_not_found, Toast.LENGTH_SHORT).show()
+            }
         }
 
-        // Adiciona o marcador ao mapa
-        binding.mapView.overlays.add(marker)
+        // Botão WhatsApp
+        binding.btnWhatsApp.setOnClickListener {
+            val texto = "Entrega de ${binding.etOrigin.text} até ${binding.etDestination.text}\n\n" +
+                    "Distância: ${binding.tvDistance.text}\n" +
+                    "Tempo estimado: ${binding.tvTime.text}\n" +
+                    "Total: ${binding.tvTotal.text}"
 
-        // Armazena a referência do marcador
-        if (isOrigin) {
-            originMarker = marker
-        } else {
-            destinationMarker = marker
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data =
+                    "https://api.whatsapp.com/send?phone=5513991337370&text=${Uri.encode(texto)}".toUri()
+            }
+            startActivity(intent)
         }
-
-        binding.mapView.invalidate()
     }
 
     private fun handleRouteCalculation() {
-        val start = startPoint ?: return showToast(R.string.validation_origin_required)
-        val end = endPoint ?: return showToast(R.string.validation_destination_required)
-
-        Log.d("ROTA_DEBUG", "StartPoint: ${start.latitude}, ${start.longitude}")
-        Log.d("ROTA_DEBUG", "EndPoint: ${end.latitude}, ${end.longitude}")
-
-        val result = routeCalculator.findShortestPath(start, end)
-
-        if (result == null) {
-            Log.e("ROUTE", "Rota não encontrada (null)")
-            showToast(R.string.error_route_not_found)
+        val ori = binding.etOrigin.text.toString()
+        val dest = binding.etDestination.text.toString()
+        if (ori.isBlank() || dest.isBlank()) {
+            Toast.makeText(this, R.string.error_invalid_address, Toast.LENGTH_SHORT).show()
             return
         }
 
-        val (path, distance) = result
+        lifecycleScope.launch(Dispatchers.IO) {
+            val origemCoord = enderecoFinder.buscarCoordenada(ori)
+            val destinoCoord = enderecoFinder.buscarCoordenada(dest)
+            val locAtual = localizacaoAtual
 
-        if (path.isEmpty() || distance.isInfinite() || distance.isNaN() || distance <= 0.0 || distance > 100.0) {
-            Log.e("ROUTE", "Rota inválida ou distância fora do esperado: $distance")
-            showToast(R.string.error_route_not_found)
-            return
-        }
-
-        MapUtils.drawRoute(
-            binding.mapView,
-            path,
-            ContextCompat.getColor(this, R.color.greenPrimary),
-            12f
-        )
-
-        updateRouteInfo(distance)
-    }
-
-    private fun updateRouteInfo(distance: Double) {
-        val value = MapUtils.calculateDeliveryValue(distance)
-        with(binding) {
-            tvValue.text = getString(R.string.template_value, value)
-            tvDistance.text = getString(R.string.template_distance, distance)
-            tvTime.text = getString(R.string.template_time, distance * 3)
-        }
-    }
-
-    private fun shareRouteViaWhatsApp() {
-        val message = MapUtils.formatRouteDetails(
-            origin = binding.etOrigin.text.toString(),
-            destination = binding.etDestination.text.toString(),
-            distance = binding.tvDistance.text.toString().replace(" km", "").toDoubleOrNull() ?: 0.0,
-            value = binding.tvValue.text.toString().replace("R$", "").toDoubleOrNull() ?: 0.0
-        )
-
-        try {
-            Intent(Intent.ACTION_VIEW).apply {
-                // Substitua Uri.parse() pela extensão KTX:
-                data = "https://api.whatsapp.com/send".toUri().buildUpon()
-                    .appendQueryParameter("phone", "5513991337370")
-                    .appendQueryParameter("text", message)
-                    .build()
-                startActivity(this)
+            if (origemCoord == null || destinoCoord == null || locAtual == null) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, R.string.error_invalid_values, Toast.LENGTH_SHORT).show()
+                }
+                return@launch
             }
-        } catch (_: Exception) {
-            showToast(R.string.error_whatsapp)
+
+            val geoAtual = GeoPoint(locAtual.latitude, locAtual.longitude)
+            val origemLoc = Location("origem").apply {
+                latitude = origemCoord.latitude
+                longitude = origemCoord.longitude
+            }
+
+            val (rotaAteOrigem, rotaEntrega) = graphHopperManager.calculateTwoRoutes(
+                current = geoAtual,
+                origin = origemCoord,
+                destination = destinoCoord
+            )
+
+            val deslocKm = graphHopperManager.calculateDisplacementDistance(locAtual, origemLoc)
+            val entregaKm = rotaEntrega.distanceKm
+            val deslocCusto = deslocKm * TAXA_DESLOCAMENTO_KM
+
+            val valorEntrega = MapUtils.calculateDeliveryValue(entregaKm)
+            val valorTotal = valorEntrega + deslocCusto
+            val tempoEstimado = (entregaKm * 3).toInt()
+
+            withContext(Dispatchers.Main) {
+                mapView.overlays.removeAll { it is org.osmdroid.views.overlay.Polyline }
+
+                MapUtils.drawRoute(mapView, rotaAteOrigem.points, ContextCompat.getColor(this@MainActivity, R.color.red), 6f, "rota_deslocamento")
+                MapUtils.drawRoute(mapView, rotaEntrega.points, ContextCompat.getColor(this@MainActivity, R.color.greenPrimary), 6f, "rota_entrega")
+
+                binding.tvDistance.text = getString(R.string.distancia_formatada, entregaKm)
+                binding.tvTime.text = getString(R.string.tempo_estimado_formatado, tempoEstimado)
+                binding.tvTotal.text = getString(R.string.valor_total_formatado, valorTotal)
+            }
         }
     }
 
-    private fun showToast(@StringRes messageRes: Int) {
-        Toast.makeText(this, getString(messageRes), Toast.LENGTH_SHORT).show()
+    private fun removerMarcador(tipo: String) {
+        mapView.overlays.removeAll { it is Marker && it.title == tipo }
     }
 
-    override fun onResume() {
-        super.onResume()
-        binding.mapView.onResume()
+    private fun adicionarPino(map: MapView, ponto: GeoPoint, titulo: String, iconeId: Int): Marker {
+        return Marker(map).apply {
+            position = ponto
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            title = titulo
+            icon = ContextCompat.getDrawable(this@MainActivity, iconeId)
+            map.overlays.add(this)
+            map.controller.animateTo(ponto)
+            map.invalidate()
+        }
     }
 
-    override fun onPause() {
-        super.onPause()
-        binding.mapView.onPause()
+    // Permissões
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 1001 && grantResults.firstOrNull() != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, R.string.error_gps_disabled, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_manual_mode -> {
+                startActivity(Intent(this, ManualCalcActivity::class.java))
+                true
+            }
+            R.id.menu_about -> {
+                Toast.makeText(this, "Desenvolvido por Christian", Toast.LENGTH_SHORT).show()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }

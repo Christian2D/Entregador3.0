@@ -1,14 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- Item 1: Modo Manual -->
     <item
-        android:id="@+id/action_manual"
+        android:id="@+id/menu_manual_mode"
+        android:icon="@drawable/ic_calculadora_estrada"
         android:title="@string/menu_manual_mode"
-        android:icon="@drawable/ic_calculator"/>
+        app:showAsAction="always" />
 
+    <!-- Item 2: Sobre o app -->
     <item
-        android:id="@+id/action_info"
+        android:id="@+id/menu_about"
+        android:icon="@drawable/ic_info"
         android:title="@string/menu_about"
-        app:showAsAction="never"/>
+        app:showAsAction="always" />
 </menu>

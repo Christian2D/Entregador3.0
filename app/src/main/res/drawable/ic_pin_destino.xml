@@ -1,0 +1,23 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Pino base -->
+    <path
+        android:fillColor="#D32F2F"
+        android:pathData="M24,2a16,16 0,1 1,0 32c-0.7,0 -1.4,-0.1 -2,-0.2l-6,6 0,-6c-4.9,-2.5 -8,-7.6 -8,-13.3a16,16 0,0 1,16 -16z" />
+
+    <!-- Mastro da bandeira -->
+    <path
+        android:fillColor="#212121"
+        android:pathData="M23,10h2v14h-2z" />
+
+    <!-- Bandeira quadriculada -->
+    <group android:translateX="25" android:translateY="10">
+        <path android:fillColor="#FFFFFF" android:pathData="M0,0h8v4h-8z" />
+        <path android:fillColor="#000000" android:pathData="M0,0h4v2h-4z" />
+        <path android:fillColor="#000000" android:pathData="M4,2h4v2h-4z" />
+    </group>
+</vector>
